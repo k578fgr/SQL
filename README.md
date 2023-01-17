@@ -18,4 +18,13 @@ WHERE
 ```
 
 SELECT * FROM products
-WHERE country = 'RU' OR country = 'UA'
+
+WHERE country = 'RU' OR country = 'UA' OR 'BL'
+
+Чтобы сделать проще 
+
+SELECT * FROM products
+WHERE country IN ('RU', 'UA', 'BL')
+
+SELECT * FROM products
+WHERE country IN ('RU', 'UA', 'BL') AND price < 1000
