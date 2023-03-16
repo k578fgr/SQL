@@ -1,0 +1,21 @@
+SELECT column_name FROM table_name; #Извлекает записи из одной или нескольких таблиц
+UPDATE table_name SET column_name = value; #Модифицирует записи
+INSERT INTO table_name (                   #Создает записи
+    column1,
+    column2)
+VALUES (
+    value1,
+    value2
+);
+DELETE FROM table_name WHERE condition;     #Удаляет записи
+
+CREATE DATABASE databasename;
+DROP DATABASE databasename; #Удаляет существующую таблицу, представление таблицы или другой объект в БД
+
+CREATE TABLE table_name (
+    column1 datatype,
+    column2 datatype
+);
+
+ALTER TABLE table_name ADD column_name datatype; #Модифицирует существующий в БД объект, такой как таблица
+DROP TABLE table_name;
