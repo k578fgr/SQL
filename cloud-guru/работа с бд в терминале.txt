@@ -1,0 +1,64 @@
+postgresql-setup --initdb
+- Инциализация Postgres
+
+systemctl enable postgresql --now
+
+id postgres
+- увидеть пользователя БД
+
+/var/lib/pgsql 
+- Его домашний каталог
+
+psql 
+- увидеть базы данных
+
+\l
+- увидеть список баз данных
+
+create database demodb;
+Создать базу данных
+
+insert into tab01 valuse (1, 'MariaDB'), (2, 'PostgreSQL);
+
+\с demodb 
+- (connect) подключиться к базе данных
+
+\db
+- список табличных пространств, которые создаются по умолчанию
+
+\dt 
+- Таблицы по умолчанию (тип таблицы)
+
+create table tab01 (col01 int, col2 varchar(20));
+
+\d tab01 
+- зайти в колонку
+
+SELECT * FROM tab01 
+- увидеть информацию в колонце
+
+\q - выход
+
+create demodb2 
+- создаёт базу данных
+
+перенести копию бд в demodb2
+psql demodb2 < /путь до копии/db.dump
+
+Ключ -1 выполняет задание в одну транзакцию, если будет ошибка, то произойдёт откат
+psql -1 demodb3 < /путь/db.dump 
+
+Удалить всю базу данных
+drobdb demodb
+
+Конфигурационный файл (пример - поменять прослушавыемый порт)
+vim /var/lib/pgsql/data/postgresql.conf
+
+Или копирование на уровне файловой системы
+tar -cjf backup.tar /var/lig/pgsql/data/
+
+- Проверить архив на содержание файлов
+tar -tf /root/backup.tar.bz |head
+
+Распаковка архива, указываем файл архива и он распакуется на своём месте
+tar -xf root/backup.tar.bz
