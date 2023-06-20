@@ -6,6 +6,9 @@ systemctl enable postgresql --now
 id postgres
 - увидеть пользователя БД
 
+psql -U test_stroyportal
+- Зайти от пользователя
+
 /var/lib/pgsql 
 - Его домашний каталог
 
@@ -29,6 +32,23 @@ insert into tab01 valuse (1, 'MariaDB'), (2, 'PostgreSQL);
 \dt 
 - Таблицы по умолчанию (тип таблицы)
 
+Настройка БД
+Войти в контейнер с PostgreSQL :
+
+docker exec -it <имя контейнера> bash
+Войти в БД:
+
+psql -U postgres
+Создать новую БД и пользователя, наделить нового пользователя всеми привелегиями:
+
+create database test_stroyportal; 
+create user test_stroyportal with encrypted password 'test_stroyportal';
+grant all privileges on database test_stroyportal to test_stroyportal;
+Взять у коллег актуальный дамп БД
+Импортировать дамп БД в postgresql
+
+psql -U test_stroyportal -W test_stroyportal < deploy/initial_data/sql/test_20220713_203816.sql
+
 create table tab01 (col01 int, col2 varchar(20));
 
 \d tab01 
@@ -41,6 +61,8 @@ SELECT * FROM tab01
 
 create demodb2 
 - создаёт базу данных
+
+
 
 перенести копию бд в demodb2
 psql demodb2 < /путь до копии/db.dump
