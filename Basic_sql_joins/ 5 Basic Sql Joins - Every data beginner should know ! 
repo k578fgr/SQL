@@ -1,0 +1,66 @@
+Emp Table          Skill Table
+--------------    --------------------
+|Enma|SkillID|    |SkillID|SKILL_NAME|
+|Alex|101    |    |101    |AWS       |
+|Maya|102    |    |102    |GCP       |
+|Radha|103   |    |103    |AZURE     |
+|Mahan|NULL  |    |104    |DEVOPS    |
+--------------    |105    |AGILE     |
+                  |106    |CYBERSEC  |
+                  ------------------
+
+1. Inner Join (Центр)
+Syntax
+
+SELECT Emp.Ename, Skill.SKILL_NAME
+FROM Emp
+INNER JOIN
+Skill
+ON Emp.Skill_ID = Skill.Skill_ID
+
+Ename|  |SKILL_NAME
+|Alex|  |AWS
+|Maya|  |GCP       
+|Radha| |AZURE
+
+2. Left Outer Join
+
+Syntax
+
+SELECT Emp.Ename, Skill.SKILL_NAME
+FROM Emp
+LEFT JOIN
+Skill
+ON Emp.Skill_ID = Skill.Skill_ID
+
+Output will be
+
+Ename|  |SKILL_NAME
+|Alex|  |AWS
+|Maya|  |GCP       
+|Radha| |AZURE
+|Mahan| |NULL
+
+3. Right Join 
+
+Syntax
+
+SELECT Emp.Ename, Skill.SKILL_NAME
+FROM Emp
+RIGHT JOIN
+Skill
+ON Emp.Skill_ID = Skill.Skill_ID
+
+Ename|  |SKILL_NAME
+|Alex|  |AWS
+|Maya|  |GCP       
+|Radha| |AZURE
+|Mahan| |NULL
+|NULL|  |DEVOPS
+|NULL|  |AGILE
+|NULL|  |CYBERSEC
+
+4. CROSS JOIN (Каждая возможная комбинация)
+Будет 24 компинации с каждой возможным столбцом
+Потому что в одной колонке 4, в другой 6
+4*6=24 возможных компбинаций
