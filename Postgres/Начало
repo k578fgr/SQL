@@ -36,3 +36,25 @@ make: *** [GNUmakefile:11: all-src-recurse] Ошибка 2
 Здесь copy_file_range_custom — новое имя функции. 
 После этого вам нужно ЗАМЕНИТЬ все вызовы этой функции в вашем коде на новое имя MY_copy_file_range
 
+
+cd /usr/local/pgsql/data/
+
+cd postgresql-10.0
+
+pg_ctl -D /usr/local/pgsql/data -l logfile start
+mkdir -p /home/postgres/
+
+export PGDATA=/usr/local/pgsql/data
+export PATH=$PATH:/usr/local/pgsql/bin
+
+
+Чтобы запустить бд
+initdb -k
+
+Если уже есть
+initdb -k usr/local/pgsql/data
+
+pg_ctl -w -l /home/postgres/logfile -D /usr/local/pgsql/data start
+
+Чтобы поменять пароль бдшному юзеру
+\password <user>
