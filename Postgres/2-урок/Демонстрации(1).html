@@ -1,0 +1,584 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF8">
+<style>
+p.c    { }
+h1     { font-size: 160%; font-weight: bold; padding-top: 1ex; padding-bottom: 1ex; }
+div.s1 { margin-left: 20px; padding-left: 10px; font-weight: bold; }
+div.s2 { margin-left: 80px; padding-left: 10px; font-weight: bold; }
+div.s3 { margin-left: 140px; padding-left: 10px; font-weight: bold; }
+div.r1 { margin-left: 20px; padding-left: 10px; }
+div.r2 { margin-left: 80px; padding-left: 10px; }
+div.r3 { margin-left: 140px; padding-left: 10px; }
+div.e  { margin-left: 20px; padding-left: 10px; font-weight: bold; <!--color: darkblue;--> }
+div.r  { margin-left: 20px; padding-left: 10px; <!--color: darkblue;--> }
+</style>
+</head>
+<body>
+<h1>
+Файл postgresql.conf и представление pg_file_settings
+</h1>
+<p class="C">
+Посмотрим небольшой фрагмент конфигурационного файла.
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> setting <span style="color:#3b6ac8">FROM</span> pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'config_file'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+                setting                
+---------------------------------------
+ /usr/local/pgsql/data/postgresql.conf
+(1 row)
+
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#00a150">\!</span> sed <span style="color:#323232">-</span>n <span style="color:#1094a0">'35,46p'</span> <span style="color:#323232">/</span>usr<span style="color:#323232">/</span><span style="color:#3b6ac8">local</span><span style="color:#323232">/</span>pgsql<span style="color:#323232">/</span><span style="color:#3b6ac8">data</span><span style="color:#323232">/</span>postgresql.conf
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+# FILE LOCATIONS
+#------------------------------------------------------------------------------
+
+# The default values of these variables are driven from the -D command-line
+# option or PGDATA environment variable, represented here as ConfigDir.
+
+#data_directory = 'ConfigDir'		# use data in another directory
+					# (change requires restart)
+#hba_file = 'ConfigDir/pg_hba.conf'	# host-based authentication file
+					# (change requires restart)
+#ident_file = 'ConfigDir/pg_ident.conf'	# ident configuration file
+					# (change requires restart)
+</pre></div>
+<p class="C">
+Большинство строк в файле закомментированы, а для соответствующих параметров
+используются значения по умолчанию.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Чтобы увидеть все незакоментированные строки конфигурационного файла, можно
+обратиться к представлению pg_file_settings:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> sourceline<span style="color:#323232">,</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> applied
+   <span style="color:#3b6ac8">FROM</span>   pg_file_settings
+   <span style="color:#3b6ac8">WHERE</span>  sourcefile <span style="color:#3b6ac8">LIKE</span> <span style="color:#1094a0">'%postgresql.conf'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ sourceline |            name            |      setting       | applied 
+------------+----------------------------+--------------------+---------
+         64 | max_connections            | 100                | t
+        113 | shared_buffers             | 128MB              | t
+        127 | dynamic_shared_memory_type | posix              | t
+        472 | log_timezone               | W-SU               | t
+        566 | datestyle                  | iso, dmy           | t
+        568 | timezone                   | W-SU               | t
+        581 | lc_messages                | en_US.UTF-8        | t
+        583 | lc_monetary                | ru_RU.UTF-8        | t
+        584 | lc_numeric                 | ru_RU.UTF-8        | t
+        585 | lc_time                    | ru_RU.UTF-8        | t
+        588 | default_text_search_config | pg_catalog.english | t
+(11 rows)
+
+</pre></div>
+<p class="C">
+Столбец applied имеет обманчивое название. Если внести изменения в
+конфигурационный файл, то значение столбца скажет о том, можно ли применить
+новое значение без перезапуска сервера. Представление pg_file_settings
+показывает лишь содержимое файлов конфигурации, реальные значения параметров
+могут отличаться.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Представление pg_settings
+</h1>
+<p class="C">
+Получить действующие значения всех параметров можно в представлении
+pg_settings. Вот что в нем содержится, например, для work_mem:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> unit<span style="color:#323232">,</span>
+          boot_val<span style="color:#323232">,</span> reset_val<span style="color:#323232">,</span>
+          source<span style="color:#323232">,</span> sourcefile<span style="color:#323232">,</span> sourceline<span style="color:#323232">,</span>
+          pending_restart<span style="color:#323232">,</span> context
+   <span style="color:#3b6ac8">FROM</span>   pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#00a150">\gx</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+-[ RECORD 1 ]---+---------
+name            | work_mem
+setting         | 4096
+unit            | kB
+boot_val        | 4096
+reset_val       | 4096
+source          | default
+sourcefile      | 
+sourceline      | 
+pending_restart | f
+context         | user
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Рассмотрим ключевые столбцы представления pg_settings:
+</p>
+<ul class="U">
+<li>name, setting, unit - название и значение параметра,</li>
+<li>boot_val - значение по умолчанию,</li>
+<li>reset_val - если параметр был изменен во время сеанса, то командой RESET 
+можно восстановить это значение,</li>
+<li>source - источник текущего значения параметра,</li>
+<li>pending_restart - значение изменено в файле конфигурации, но для применения требуется перезапуск сервера.</li>
+</ul>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Столбец context определяет действия, необходимые для применения параметра.
+Среди возможных значений:
+</p>
+<ul class="U">
+<li>internal - изменить нельзя, задано при установке,</li>
+<li>postmaster - требуется перезапуск сервера,</li>
+<li>sighup - требуется перечитать файлы конфигурации,</li>
+<li>superuser - суперпользователь может изменить для своего сеанса,</li>
+<li>user - любой пользователь может изменить для своего сеанса.</li>
+</ul>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Порядок применения строк postgresql.conf
+</h1>
+<p class="C">
+Если один и тот же параметр встречается в файле несколько раз, то
+устанавливается значение из последней считанной строки.
+</p>
+<p class="C">
+Запишем в конец postgresql.conf две строки с параметром work_mem:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#00a150">\!</span> echo work_mem<span style="color:#323232">=</span><span style="color:#1094a0">12</span>MB <span style="color:#323232">&gt;&gt; /</span>usr<span style="color:#323232">/</span><span style="color:#3b6ac8">local</span><span style="color:#323232">/</span>pgsql<span style="color:#323232">/</span><span style="color:#3b6ac8">data</span><span style="color:#323232">/</span>postgresql.conf
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#00a150">\!</span> echo work_mem<span style="color:#323232">=</span><span style="color:#1094a0">8</span>MB <span style="color:#323232">&gt;&gt; /</span>usr<span style="color:#323232">/</span><span style="color:#3b6ac8">local</span><span style="color:#323232">/</span>pgsql<span style="color:#323232">/</span><span style="color:#3b6ac8">data</span><span style="color:#323232">/</span>postgresql.conf
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> sourceline<span style="color:#323232">,</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> applied
+   <span style="color:#3b6ac8">FROM</span>   pg_file_settings
+   <span style="color:#3b6ac8">WHERE</span>  name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ sourceline |   name   | setting | applied 
+------------+----------+---------+---------
+        659 | work_mem | 12MB    | f
+        660 | work_mem | 8MB     | t
+(2 rows)
+
+</pre></div>
+<p class="C">
+По applied = f для строки с 12MB уже понятно, что это значение не будет
+применено.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Для параметра work_mem значение context = user. Значит, его можно менять
+прямо во время сеанса, а чтобы изменить значение во всех сеансах, достаточно
+перечитать файлы конфигурации:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">pg_reload_conf</span><span style="color:#323232">();</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ pg_reload_conf 
+----------------
+ t
+(1 row)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Убедимся, что work_mem получил значение от последней строки:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> unit<span style="color:#323232">,</span>
+          boot_val<span style="color:#323232">,</span> reset_val<span style="color:#323232">,</span>
+          source<span style="color:#323232">,</span> sourcefile<span style="color:#323232">,</span> sourceline<span style="color:#323232">,</span>
+          pending_restart<span style="color:#323232">,</span> context
+   <span style="color:#3b6ac8">FROM</span>   pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#00a150">\gx</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+-[ RECORD 1 ]---+--------------------------------------
+name            | work_mem
+setting         | 8192
+unit            | kB
+boot_val        | 4096
+reset_val       | 8192
+source          | configuration file
+sourcefile      | /usr/local/pgsql/data/postgresql.conf
+sourceline      | 660
+pending_restart | f
+context         | user
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Команда ALTER SYSTEM
+</h1>
+<p class="C">
+Для примера установим параметр work_mem:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">ALTER SYSTEM SET</span> work_mem <span style="color:#3b6ac8">TO</span> <span style="color:#1094a0">'16mb'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ERROR:  invalid value for parameter &quot;work_mem&quot;: &quot;16mb&quot;
+HINT:  Valid units for this parameter are &quot;kB&quot;, &quot;MB&quot;, &quot;GB&quot;, and &quot;TB&quot;.
+</pre></div>
+<p class="C">
+Что случилось?
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+ALTER SYSTEM выполняет проверку на допустимые значения.
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">ALTER SYSTEM SET</span> work_mem <span style="color:#3b6ac8">TO</span> <span style="color:#1094a0">'16MB'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ALTER SYSTEM
+</pre></div>
+<p class="C">
+Вот теперь все правильно.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+В результате выполнения команды значение 16MB записано в файл
+postgresql.auto.conf:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#323232">*</span>
+<span style="color:#3b6ac8">FROM</span> <span style="color:#c73a69">regexp_split_to_table</span><span style="color:#323232">(</span><span style="color:#c73a69">pg_read_file</span><span style="color:#323232">(</span><span style="color:#1094a0">'postgresql.auto.conf'</span><span style="color:#323232">),</span> <span style="color:#1094a0">'\n'</span><span style="color:#323232">);</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+               regexp_split_to_table               
+---------------------------------------------------
+ # Do not edit this file manually!
+ # It will be overwritten by ALTER SYSTEM command.
+ work_mem = '16MB'
+ 
+(4 rows)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+...но не установлено:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SHOW</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ work_mem 
+----------
+ 8MB
+(1 row)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Чтобы применить изменения для work_mem, перечитаем файлы конфигурации:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">pg_reload_conf</span><span style="color:#323232">();</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ pg_reload_conf 
+----------------
+ t
+(1 row)
+
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> unit<span style="color:#323232">,</span>
+          boot_val<span style="color:#323232">,</span> reset_val<span style="color:#323232">,</span>
+          source<span style="color:#323232">,</span> sourcefile<span style="color:#323232">,</span> sourceline<span style="color:#323232">,</span>
+          pending_restart<span style="color:#323232">,</span> context
+   <span style="color:#3b6ac8">FROM</span>   pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#00a150">\gx</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+-[ RECORD 1 ]---+-------------------------------------------
+name            | work_mem
+setting         | 16384
+unit            | kB
+boot_val        | 4096
+reset_val       | 16384
+source          | configuration file
+sourcefile      | /usr/local/pgsql/data/postgresql.auto.conf
+sourceline      | 3
+pending_restart | f
+context         | user
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Для удаления строк из postgresql.auto.conf используется команда ALTER
+SYSTEM RESET.
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">ALTER SYSTEM RESET</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ALTER SYSTEM
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#323232">*</span>
+<span style="color:#3b6ac8">FROM</span> <span style="color:#c73a69">regexp_split_to_table</span><span style="color:#323232">(</span><span style="color:#c73a69">pg_read_file</span><span style="color:#323232">(</span><span style="color:#1094a0">'postgresql.auto.conf'</span><span style="color:#323232">),</span> <span style="color:#1094a0">'\n'</span><span style="color:#323232">);</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+               regexp_split_to_table               
+---------------------------------------------------
+ # Do not edit this file manually!
+ # It will be overwritten by ALTER SYSTEM command.
+ 
+(3 rows)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Еще раз перечитаем конфигурацию. Теперь восстановится значение из
+postgresql.conf:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">pg_reload_conf</span><span style="color:#323232">();</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ pg_reload_conf 
+----------------
+ t
+(1 row)
+
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> unit<span style="color:#323232">,</span>
+          boot_val<span style="color:#323232">,</span> reset_val<span style="color:#323232">,</span>
+          source<span style="color:#323232">,</span> sourcefile<span style="color:#323232">,</span> sourceline<span style="color:#323232">,</span>
+          pending_restart<span style="color:#323232">,</span> context
+   <span style="color:#3b6ac8">FROM</span>   pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#00a150">\gx</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+-[ RECORD 1 ]---+--------------------------------------
+name            | work_mem
+setting         | 8192
+unit            | kB
+boot_val        | 4096
+reset_val       | 8192
+source          | configuration file
+sourcefile      | /usr/local/pgsql/data/postgresql.conf
+sourceline      | 660
+pending_restart | f
+context         | user
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Установка параметров во время исполнения
+</h1>
+<p class="C">
+Для изменения параметров во время сеанса можно использовать команду SET:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SET</span> work_mem <span style="color:#3b6ac8">TO</span> <span style="color:#1094a0">'24MB'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+SET
+</pre></div>
+<p class="C">
+Или функцию set_config:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">set_config</span><span style="color:#323232">(</span><span style="color:#1094a0">'work_mem'</span><span style="color:#323232">,</span> <span style="color:#1094a0">'32MB'</span><span style="color:#323232">,</span> <span style="color:#3b6ac8">false</span><span style="color:#323232">);</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ set_config 
+------------
+ 32MB
+(1 row)
+
+</pre></div>
+<p class="C">
+Третий параметр функции говорит о том, нужно ли устанавливать значение
+только для текущей транзакции (true) или до конца работы сеанса (false).
+Это важно при работе приложения через пул соединений, когда в одном сеансе
+могут выполняться транзакции разных пользователей.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Чтение значений параметров во время выполнения
+</h1>
+<p class="C">
+Получить значение параметра можно разными способами:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SHOW</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ work_mem 
+----------
+ 32MB
+(1 row)
+
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">current_setting</span><span style="color:#323232">(</span><span style="color:#1094a0">'work_mem'</span><span style="color:#323232">);</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ current_setting 
+-----------------
+ 32MB
+(1 row)
+
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> name<span style="color:#323232">,</span> setting<span style="color:#323232">,</span> unit <span style="color:#3b6ac8">FROM</span> pg_settings <span style="color:#3b6ac8">WHERE</span> name <span style="color:#323232">=</span> <span style="color:#1094a0">'work_mem'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+   name   | setting | unit 
+----------+---------+------
+ work_mem | 32768   | kB
+(1 row)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Установка параметров транзакции
+</h1>
+<p class="C">
+Откроем транзакцию и установим новое значение work_mem:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">RESET</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+RESET
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">BEGIN</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+BEGIN
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SET</span> work_mem <span style="color:#3b6ac8">TO</span> <span style="color:#1094a0">'64MB'</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+SET
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SHOW</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ work_mem 
+----------
+ 64MB
+(1 row)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Если транзакция откатывается, то установка параметра отменяется:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">ROLLBACK</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ROLLBACK
+</pre></div>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SHOW</span> work_mem<span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ work_mem 
+----------
+ 8MB
+(1 row)
+
+</pre></div>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<h1>
+Пользовательские параметры
+</h1>
+<p class="C">
+Параметры можно создавать прямо во время сеанса, в том числе с предварительной
+проверкой на существование:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT CASE WHEN</span> <span style="color:#c73a69">current_setting</span><span style="color:#323232">(</span><span style="color:#1094a0">'myapp.currency_code'</span><span style="color:#323232">,</span> <span style="color:#3b6ac8">true</span><span style="color:#323232">)</span> <span style="color:#3b6ac8">IS NULL THEN</span>
+                <span style="color:#c73a69">set_config</span><span style="color:#323232">(</span><span style="color:#1094a0">'myapp.currency_code'</span><span style="color:#323232">,</span> <span style="color:#1094a0">'RUB'</span><span style="color:#323232">,</span> <span style="color:#3b6ac8">false</span><span style="color:#323232">)</span>
+            <span style="color:#3b6ac8">ELSE</span>
+                <span style="color:#c73a69">current_setting</span><span style="color:#323232">(</span><span style="color:#1094a0">'myapp.currency_code'</span><span style="color:#323232">)</span>
+            <span style="color:#3b6ac8">END</span><span style="color:#323232">;</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ current_setting 
+-----------------
+ RUB
+(1 row)
+
+</pre></div>
+<p class="C">
+В имени пользовательского параметра обязательно должна быть точка, чтобы
+отличать их от стандартных параметров.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Теперь myapp.currency_code можно использовать как глобальную переменную сеанса:
+</p>
+<div class="S1">
+<pre style="color:#323232; background-color:#ffffff;  "><span style="color:#323232">=&gt;</span> <span style="color:#3b6ac8">SELECT</span> <span style="color:#c73a69">current_setting</span><span style="color:#323232">(</span><span style="color:#1094a0">'myapp.currency_code'</span><span style="color:#323232">);</span>
+</pre>
+</div>
+<div class="R1"><pre class="R1">
+ current_setting 
+-----------------
+ RUB
+(1 row)
+
+</pre></div>
+<p class="C">
+Пользовательские параметры можно указать в postgresql.conf, тогда они
+автоматически будут инициализироваться во всех сеансах.
+</p>
+<hr size=0 style="border-top: 1px dashed grey; border-bottom: 0;"/>
+<p class="C">
+Конец демонстрации.
+</p>
+</body>
+</html>

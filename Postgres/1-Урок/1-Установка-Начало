@@ -1,0 +1,94 @@
+Установка постгрес
+Поменять пароль пользователю postgres
+su postgres
+psql
+
+Скачиваем 10 версию постгри 
+tar xzf postgresql-10.0.tar.gz
+
+cd postgresql-10.0
+
+Установка зависимостей
+sudo apt-get install libreadline-dev
+./configure
+
+make
+
+"Была ошибка, вот как решил:"
+
+make
+
+opy_fetch.c:159:1: error: conflicting types for ‘copy_file_range’
+  159 | copy_file_range(const char *path, off_t begin, off_t end, bool trunc)
+      | ^~~~~~~~~~~~~
+In file included from copy_fetch.c:15:
+/usr/include/unistd.h:1107:9: note: previous declaration of ‘copy_file_range’ was here
+ 1107 | ssize_t copy_file_range (int __infd, __off64_t *__pinoff,
+      |         ^~~~~~~~~~~~~
+make[3]: *** [<встроенное>: copy_fetch.o] Ошибка 1
+make[3]: выход из каталога «/home/k5/Documents/SQL/Postgres/postgresql-10.0/src/bin/pg_rewind»
+make[2]: *** [Makefile:40: all-pg_rewind-recurse] Ошибка 2
+make[2]: выход из каталога «/home/k5/Documents/SQL/Postgres/postgresql-10.0/src/bin»
+make[1]: *** [Makefile:37: all-bin-recurse] Ошибка 2
+make[1]: выход из каталога «/home/k5/Documents/SQL/Postgres/postgresql-10.0/src»
+make: *** [GNUmakefile:11: all-src-recurse] Ошибка 2
+
+Здесь copy_file_range_custom — новое имя функции. 
+После этого вам нужно ЗАМЕНИТЬ все вызовы этой функции в вашем коде на новое имя MY_copy_file_range
+Это заменить в самом коде повторы
+
+cd /usr/local/pgsql/data/
+
+cd postgresql-10.0
+
+Создаём юзера postgres
+
+pg_ctl -D /usr/local/pgsql/data -l logfile start
+mkdir -p /usr/local/pgsql/data
+
+sudo chown postgres /usr/local/pgsql/data
+
+cd /usr/local/pgsql/data/
+
+cd postgresql-10.0
+
+mkdir -p /home/postgres/
+
+pg_ctl -D /usr/local/pgsql/data -l logfile start
+
+(ЕСЛИ НАПИСАНО ЧТО КОМАНДА psql НЕ НАЙДЕНА)
+export PGDATA=/usr/local/pgsql/data
+export PATH=$PATH:/usr/local/pgsql/bin
+
+Либо можно выставить эти переменные таким обрахом
+\set PGDATA /usr/local/pgsql/data
+
+Чтобы найти переменную нужно
+\echo :PGDATA
+
+
+Чтобы запустить бд
+initdb -k
+
+Если уже есть
+initdb -k /usr/local/pgsql/data
+
+Подключение к бд
+pg_ctl -w -l /home/postgres/logfile -D /usr/local/pgsql/data start
+
+Чтобы поменять пароль бдшному юзеру
+\password <user>
+
+Проверяем работу
+psql -c 'select now();'
+
+Проверить таблицы pg_tables
+SELECT * FROM pg_tables LIMIT 5;
+
+Чтобы проверить куда мы подключены
+\conninfo
+
+После чего можем подключаться к бд 
+
+Чтобы остановить базу данных (У меня не сработало)
+pg_ctl -w -D /usr/local/pgsql/pgsql/data stop
