@@ -1,0 +1,23 @@
+Урок 1 SELECT
+Делает запрос из таблицы users
+
+SELECT * FROM users;
+
+Чтобы увидеть всех пользователей из таблицы users
+
+
+* - это столбец
+(first_name, last_name, birthday, age)
+
+
+FROM users - из таблицы
+
+SELECT last_name, first_name, birthday FROM users;
+
+Тогда отобразиться в указанной последовательности
+
+Ещё можно указать конкретный параметр
+
+SELECT last_name, first_name, birthday FROM users WHERE age > 18;
+Получим список пользователей которым исполнилось 18 лет
+Знак > можно заменить на (=, >=)
