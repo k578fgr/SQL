@@ -1,0 +1,25 @@
+Запрос на то, что нам нужно выбрать из таблицы только middle и senior
+SELECT * FROM team
+WHERE level='middle' AND level='senior'
+
+Оператор AND это условие одновременности
+Одновременно должно находится middle и senior,
+что невозможно
+
+Нужен либо мидл либо сеньор, поэтому заменим AND, на OR
+
+
+Теперь выберем всех програмистов на пайтон и php
+
+SELECT * FROM team
+WHERE basic_language='python' OR basic_language='php' AND level='middle'
+
+Но выполнение запроса приведёт к тому, что будет джун мидл и сеньор
+Потому что оператор AND имеет приоритет выше, чем OR
+
+Чтобы указать приоритет, нужно выполнить применение скобок, как в математике
+
+SELECT * FROM team
+WHERE (basic_language='python' OR basic_language='php') AND level='middle'
+
+Даже если уверенны в коде, лучше расставлять скобки приоритета
