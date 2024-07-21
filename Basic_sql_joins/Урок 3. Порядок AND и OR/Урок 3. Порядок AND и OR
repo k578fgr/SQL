@@ -3,7 +3,7 @@ SELECT * FROM team
 WHERE level='middle' AND level='senior'
 
 Оператор AND это условие одновременности
-Одновременно должно находится middle и senior,
+Одновременно должно находится жmiddle и senior,
 что невозможно
 
 Нужен либо мидл либо сеньор, поэтому заменим AND, на OR
