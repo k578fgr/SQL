@@ -1,0 +1,86 @@
+postgresql-setup --initdb
+- Инциализация Postgres
+
+systemctl enable postgresql --now
+
+id postgres
+- увидеть пользователя БД
+
+psql -U test_stroyportal
+- Зайти от пользователя
+
+/var/lib/pgsql 
+- Его домашний каталог
+
+psql 
+- увидеть базы данных
+
+\l
+- увидеть список баз данных
+
+create database demodb;
+Создать базу данных
+
+insert into tab01 valuse (1, 'MariaDB'), (2, 'PostgreSQL);
+
+\с demodb 
+- (connect) подключиться к базе данных
+
+\db
+- список табличных пространств, которые создаются по умолчанию
+
+\dt 
+- Таблицы по умолчанию (тип таблицы)
+
+Настройка БД
+Войти в контейнер с PostgreSQL :
+
+docker exec -it <имя контейнера> bash
+Войти в БД:
+
+psql -U postgres
+Создать новую БД и пользователя, наделить нового пользователя всеми привелегиями:
+
+create database test_stroyportal; 
+create user test_stroyportal with encrypted password 'test_stroyportal';
+grant all privileges on database test_stroyportal to test_stroyportal;
+Взять у коллег актуальный дамп БД
+Импортировать дамп БД в postgresql
+
+psql -U test_stroyportal -W test_stroyportal < deploy/initial_data/sql/test_20220713_203816.sql
+
+create table tab01 (col01 int, col2 varchar(20));
+
+\d tab01 
+- зайти в колонку
+
+SELECT * FROM tab01 
+- увидеть информацию в колонце
+
+\q - выход
+
+create demodb2 
+- создаёт базу данных
+
+
+
+перенести копию бд в demodb2
+psql demodb2 < /путь до копии/db.dump
+
+Ключ -1 выполняет задание в одну транзакцию, если будет ошибка, то произойдёт откат
+psql -1 demodb3 < /путь/db.dump 
+
+Удалить всю базу данных
+drobdb demodb
+
+Конфигурационный файл (пример - поменять прослушавыемый порт)
+vim /var/lib/pgsql/data/postgresql.conf
+
+Или копирование на уровне файловой системы
+tar -cjf backup.tar /var/lig/pgsql/data/
+
+- Проверить архив на содержание файлов
+tar -tf /root/backup.tar.bz |head
+
+Распаковка архива, указываем файл архива и он распакуется на своём месте
+tar -xf root/backup.tar.bz

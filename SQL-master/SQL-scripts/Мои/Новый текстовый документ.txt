@@ -1,0 +1,5 @@
+Oracle
+
+Посмотреть права моего юзера
+SELECT granted_role, user 
+FROM   dba_role_privs;

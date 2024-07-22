@@ -1,0 +1,17 @@
+create, read, update Delete
+
+Хауди-Хо
+
+```
+Insert INTO user (username, email,age,password) VALUES ('username' 'test@gmail.com', 25,0)
+```
+
+Множественное добавление
+
+```
+insert into user (username, email,age,password)
+VALUES
+('username' 'test@gmail.com', 25,0),
+('username' 'test@gmail.com', 25,0),
+('username' 'test@gmail.com', 25,0),
+('username' 'test@gmail.com', 25,0);

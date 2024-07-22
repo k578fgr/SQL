@@ -1,9 +1,0 @@
-import bsddb
-db = bsddb.btopen('btree.db', 'c')
-db['0'] = 'David'
-db['1'] = 'Clay'
-db['3'] = 'Sue'
-print ('The name of the student with ID 1 is ' +db['1'])
-db.close()
-
-И так у нас появился файл btree.db
